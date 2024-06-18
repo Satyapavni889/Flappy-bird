@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy bird</title>
+    <link rel="icon" type="image/x-icon" href="./bird-new.png">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="backgroundimg"></div>
+    <img class="My-bird" src="./bird-new.png" id="bird-1">
+    <div class="message">
+        Enter To Start Game <p><span style="color: red;">&uarr;</span>ArrowUp to Control</p>
+    </div>
+    <div class="score">
+        <span class="score_title"></span>
+        <span class="score_val"></span>
+    </div>
+    <audio class="audio">
+        <source src="./180126-ambient-morning-chill-with-birds-21348.mp3" />
+    </audio>
+    <script>
+        let move_speed = 3, gravity = 0.5;
+        let bird = document.querySelector('.My-bird');
+        let img = document.getElementById('bird-1');
+
+        let bird_props = bird.getBoundingClientRect();
+
+        let background = document.querySelector('.backgroundimg').getBoundingClientRect();
+        let score_val = document.querySelector('.score_val');
+        let message = document.querySelector('.message');
+        let score_title = document.querySelector('.score_title');
+        let audio = document.querySelector(".audio");
+        // console.log(audio)
+        // console.log(message)
+        let game_start = 'Start';
+        img.style.display = "none";
+        message.classList.add('messageStyle');
+        function pla() {
+            let audio = new Audio("180126-ambient-morning-chill-with-birds-21348.mp3")
+            audio.play()
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key == 'Enter' && game_start != 'Play') {
+                pla()
+                document.querySelectorAll('.pipe_sprite').forEach((e) => {
+                    e.remove();
+                });
+                img.style.display = 'block';
+                bird.style.top = '40vh';
+                game_start = 'Play';
+                message.innerHTML = '';
+                score_title.innerHTML = 'Score: ';
+                score_val.innerHTML = '0';
+                message.classList.remove('messageStyle')
+                play();
+            }
+        })
+        function play() {
+            function move() {
+                if (game_start != 'Play') return;
+                // let audio=document.createElement("audio")
+                // let source=document.createElement("source")
+                // source.setAttribute("src","./180126-ambient-morning-chill-with-birds-21348.mp3")
+                // audio.setAttribute("controls")
+                // audio.setAttribute("autoplay")
+                // audio.appendChild(source)
+                // let body=document.querySelector("body")
+                // body.appendChild(audio)
+                // audio.setAttribute("autoplay",true)
+                let pipe_sprite = document.querySelectorAll('.pipe_sprite');
+                pipe_sprite.forEach((element) => {
+                    let pipe_sprite_props = element.getBoundingClientRect();
+                    bird_props = bird.getBoundingClientRect();
+
+                    if (pipe_sprite_props.right <= 0) {
+                        element.remove();
+                    }
+                    else {
+                        if (bird_props.left < pipe_sprite_props.left + pipe_sprite_props.width && bird_props.left + bird_props.width > pipe_sprite_props.left && bird_props.top < pipe_sprite_props.top + pipe_sprite_props.height && bird_props.top + bird_props.height > pipe_sprite_props.top) {
+                            game_start = 'End';
+                            message.innerHTML = 'Game Over'.fontcolor('red') + '<br>Press Enter To Restart';
+                            message.classList.add('messageStyle');
+                            img.style.display = 'none';
+                            return;
+                        }
+                        else {
+                            if (pipe_sprite_props.right < bird_props.left && pipe_sprite_props.right + move_speed >= bird_props.left && element.increase_score == '1') {
+                                score_val.innerHTML = +score_val.innerHTML + 1;
+
+                            }
+                            element.style.left = pipe_sprite_props.left - move_speed + 'px'
+                        }
+                    }
+                })
+                requestAnimationFrame(move);
+            }
+            requestAnimationFrame(move);
+
+            let bird_dy = 0;
+            function apply_gravity() {
+                if (game_start != 'Play') return;
+                bird_dy = bird_dy + gravity;
+                document.addEventListener('keydown', (e) => {
+                    if (e.key == 'ArrowUp' || e.key == ' ') {
+                        img.src = './bird-new.png';
+                        bird_dy = -5.6;
+
+                    }
+                })
+                // document.addEventListener('keyup', (e) => {
+                //     if (e.key == 'ArrowUp' || e.key == ' ') {
+                //         img.src = './bird-new.png';
+                //     }
+                // })
+                if (bird_props.top <= 0 || bird_props.bottom >= background.bottom) {
+                    game_start = 'End';
+                    message.style.left = '28w';
+                    window.location.reload();
+                    // message.classlist.remove('messageStyle');
+                    return;
+                }
+                bird.style.top = bird_props.top + bird_dy + 'px';
+                bird_props = bird.getBoundingClientRect();
+                requestAnimationFrame(apply_gravity);
+            }
+
+            requestAnimationFrame(apply_gravity);
+
+            let pipe_seperation = 0;
+            let pipe_gap = 35;
+
+            function create_pipe() {
+                if (game_start != 'Play') return;
+
+                if (pipe_seperation > 100) {
+                    pipe_seperation = 0;
+                    let pipe_posi = Math.floor(Math.random() * 40) + 8;
+                    let pipe_sprite_inv = document.createElement('div');
+                    pipe_sprite_inv.className = 'pipe_sprite';
+                    pipe_sprite_inv.style.top = pipe_posi - 70 + 'vh';
+                    pipe_sprite_inv.style.left = '100vw';
+                    document.body.appendChild(pipe_sprite_inv);
+
+
+                    let pipe_sprite = document.createElement('div');
+                    pipe_sprite.className = 'pipe_sprite';
+                    pipe_sprite.style.top = pipe_posi + pipe_gap + 'vh';
+                    pipe_sprite.style.left = '100vw'
+                    pipe_sprite.increase_score = '1';
+                    document.body.appendChild(pipe_sprite);
+                }
+                pipe_seperation++;
+                requestAnimationFrame(create_pipe);
+            }
+            requestAnimationFrame(create_pipe);
+        }
+    </script>
+</body>
+
+</html>
